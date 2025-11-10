@@ -1,0 +1,18 @@
+
+## 配置开发运行环境
+
+```bash
+> cmd
+> "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+>
+```
+
+- 域天锁加密狗
+	- https://item.jd.com/10026801144690.html
+	- 在源代码中加密演示 复制打开抖音，看看【域天加密锁的作品】源代码加密，在VB VBNET VBA等用加密狗（... https://v.douyin.com/iL3p8PUm/ 09/29 GvF:/ Y@Z.Zm
+
+	- D8开发包 (用于软件防盗版) 安全性高 较复杂 链接: https://www.123912.com/s/bcFTTd-vhSSv
+		-------------提示：无需下载网盘或付款，也不需要注册，点“立即注册”后，只需要接收验证码，就可以直接下载
+	- YT88 开发包(用于软件防盗版及网站登录认证) 简单易用 链接: https://www.123865.com/s/bcFTTd-Q0SSv(解压密码：123)
+		-------------提示：无需下载网盘或付款，也不需要注册，点“立即注册”后，只需要接收验证码，就可以直接下载 D8兼容YT88，支持这两个开发包， 
+	- 可以先看YT88开发包，D8开发包较为复杂，熟悉了，再看YT88开发包。
