@@ -152,18 +152,23 @@ void DialogFunction::on_ReadStr_Len_Button_clicked()
     //先从地址0读到以前写入的字符串的长度
     ret = ytsoftkey->YReadEx(buf, addr, 1, (char*)"ffffffff", (char*)"ffffffff", DevicePath);
     nlen = buf[0];
-    if( ret != 0 )
-    {
+    if( ret != 0 ){
         QMessageBox::warning(NULL, QStringLiteral("错误"), QStringLiteral("读取字符串长度错误。"), QMessageBox::Close);return ;
+        return;
     }
-    outstring = new char[nlen+1 ];//注意，这里要加1一个长度，用于储存结束学符串，
-    memset(outstring,0,nlen+1);//outstring[nlen]=0;//将最后一个字符设置为0，即结束字符串
+
+    //这里要加1一个长度，用于储存结束学符串，
+    outstring = new char[nlen+1 ];
+
+    //outstring[nlen]=0;//将最后一个字符设置为0，即结束字符串
+    memset(outstring, 0, nlen+1);
+
     //再读取相应长度的字符串
     ret = ytsoftkey->YReadString(outstring, addr+1, nlen, (char*)"ffffffff", (char*)"ffffffff", DevicePath);
     if( ret != 0 )
         QMessageBox::warning(NULL, QStringLiteral("错误"),QStringLiteral("读取字符串错误。"), QMessageBox::Close );
     else
-        QMessageBox::information(NULL, QStringLiteral("成功"),QStringLiteral("已成功读取字符串：") +QString::fromLocal8Bit(outstring), QMessageBox::Close);
+        QMessageBox::information(NULL, QStringLiteral("成功"),QStringLiteral("已成功读取字符串：") + QString::fromLocal8Bit(outstring), QMessageBox::Close);
     delete [] outstring;
 }
 
@@ -364,7 +369,7 @@ void DialogFunction::on_GetProdeceDateButton_clicked()
     //开发商可以凭这个出厂编码来维护自己的正当权益，也可以将这个唯一编码用于加密
     //出厂编码含义：YY--MM--DD--hh--mm--ss--NNNN  均以16进制的形式表示
     //              年--月--日--时--分--秒--4位随机序号
-    char sn[17]="";char ProduceDate[100]="";
+    char sn[17]=""; char ProduceDate[100]="";
 
     //只有11版本的才支持这个功能
     int ver;

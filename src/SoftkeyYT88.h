@@ -68,8 +68,8 @@ public:
     void EnCode( BYTE * InData, BYTE * OutData,  char *Key  );
     void DeCode( BYTE * InData, BYTE * OutData, char *Key  );
     //使用增强算法对二进制数据进行加密(使用软件)
-    void  DecBySoft(    BYTE  *   aData,   BYTE   *   aKey   )  ;
-    void  EncBySoft(   BYTE  *   aData,  BYTE   *   aKey   )   ;
+    void DecBySoft(    BYTE  *   aData,   BYTE   *   aKey   )  ;
+    void EncBySoft(   BYTE  *   aData,  BYTE   *   aKey   )   ;
 
     //字符串及二进制数据的转换
      void HexStringToByteArray(char * InString,BYTE *out_data);
@@ -109,7 +109,7 @@ public:
     //对字符串进行SM2解密
     int SM2_DecString(char *InString,char *OutString,char* pin,char *InPath);
     //sm2签名
-    int   YtSign(char *msg,char *OutSign,char* pin,char *InPath );
+    int YtSign(char *msg,char *OutSign,char* pin,char *InPath );
     //返回锁的硬件芯片唯一ID
     int GetChipID( char *OutChipID,char *InPath);
     //返回锁的出厂编码
@@ -119,7 +119,9 @@ public:
     //设置普通算法
     int SetCal(char * W_HKey, char *W_LKey, char * new_HKey, char *new_LKey, char *InPath);
     void SnToProduceDate(char* InSn,char *OutProduceDate);
-    int   SetDisableFlag(BOOL biao, char* HKey, char* LKey, char* InPath);
+    int SetDisableFlag(BOOL biao, char* HKey, char* LKey, char* InPath);
+
+    static DWORD HexToInt(char* s);
 
 public:
      BOOL IsLoad;
@@ -168,7 +170,6 @@ private:
     int NT_GetProduceDate(  BYTE *OutDate,char *InPath);
     int GetTrashBufLen(char * Path,int *OutLen);
     VOID myconvert(char *hkey,char *lkey,BYTE *out_data);
-    DWORD HexToInt(char* s);
     void HexStringToByteArrayEx(char * InString,BYTE *in_data);
     int GetLen(char *InString);
     void SwitchByte2Char(char *outstring,BYTE *inbyte,int inlen);
@@ -183,7 +184,8 @@ private:
     int NT_IsUReadOnly(BOOL *IsReadOnly,char *InPath);
     int Y_SetCal(BYTE *InData,short address,short len,BYTE *password,char *Path );
     int NT_SetDisableFlag(BYTE Flag, BYTE* password, char* Path);
-    void    GetHashMsgValue(char *msg,BYTE *OutBuf );
+    void GetHashMsgValue(char *msg,BYTE *OutBuf );
+
 private:
     HMODULE hSetApiLib,hHidLib;
 };

@@ -29,6 +29,9 @@ set(SRC
     src/DialogFunction.cpp
     src/sm3.cpp
     src/SoftkeyYT88.cpp
+
+    src/WindowReadWrite.cpp
+
     src/dialog.ui
 )
 

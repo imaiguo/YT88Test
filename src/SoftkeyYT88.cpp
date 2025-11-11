@@ -25,66 +25,52 @@ BOOLEAN (_stdcall *l_HidD_GetAttributes) (IN  HANDLE HidDeviceObject,OUT PHIDD_A
 BOOLEAN (__stdcall *l_HidD_FreePreparsedData )(PHIDP_PREPARSED_DATA PreparsedData);
 NTSTATUS (__stdcall *l_HidP_GetCaps) (IN  PHIDP_PREPARSED_DATA  PreparsedData,OUT PHIDP_CAPS Capabilities);
 
-SoftkeyYT88::SoftkeyYT88()
-{
+SoftkeyYT88::SoftkeyYT88(){
     IsLoad=LoadLib();
 }
 
-SoftkeyYT88::~SoftkeyYT88()
-{
+SoftkeyYT88::~SoftkeyYT88(){
     if(hSetApiLib) FreeLibrary(hSetApiLib);
     if(hHidLib) FreeLibrary(hHidLib);
 }
 
-int SoftkeyYT88::Hanldetransfe(HANDLE hUsbDevice,BYTE *array_in,int InLen,BYTE *array_out,int OutLen,char *InPath)
-{
+int SoftkeyYT88::Hanldetransfe(HANDLE hUsbDevice,BYTE *array_in,int InLen,BYTE *array_out,int OutLen,char *InPath){
     BOOL IsU=FALSE;
-    if(lstrlenA(InPath)>1)
-    {
+    if(lstrlenA(InPath)>1){
         if(InPath[5]==':')IsU=TRUE;
-    }
-    if(IsU)
-    {
+    }if(IsU){
         //注意，这里inlen要加1
         if(!Ukey_transfer(hUsbDevice,array_in,InLen+1,array_out,OutLen)){
             CloseHandle(hUsbDevice);return -93;
         }
-    }
-    else
-    {
+    }else{
         if(InLen>0)if(!SetFeature(hUsbDevice,array_in,InLen)){CloseHandle(hUsbDevice);return -93;}
         if(OutLen>0)if(!GetFeature(hUsbDevice,array_out,OutLen)){CloseHandle(hUsbDevice);return -94;}
     }
+
     CloseHandle(hUsbDevice);
     return 0;
 }
 
-HANDLE SoftkeyYT88::MyOpenPath(char *InPath)
-{
+HANDLE SoftkeyYT88::MyOpenPath(char *InPath){
     BOOL biao;int count=0;
-    if(strlen(InPath)<1)
-    {
+    if(strlen(InPath)<1){
         char OutPath[260];
         biao=isfindmydevice(0,&count,OutPath);
         if(!biao){return INVALID_HANDLE_VALUE;}
         return  CreateFileA(OutPath,GENERIC_READ | GENERIC_WRITE,FILE_SHARE_READ | FILE_SHARE_WRITE,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
-    }
-    else
-    {
+    }else{
         return  CreateFileA(InPath,GENERIC_READ | GENERIC_WRITE,FILE_SHARE_READ | FILE_SHARE_WRITE,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
     }
 }
 
-
-BOOL  SoftkeyYT88::LoadLib()
-{
+BOOL  SoftkeyYT88::LoadLib(){
     char SetupApiPath[MAX_PATH*2]="";char HidPath[MAX_PATH*2]="";
 
     GetSystemDirectoryA(SetupApiPath,MAX_PATH);lstrcatA(SetupApiPath,"\\SetupApi.dll");
 
     hSetApiLib=LoadLibraryExA(SetupApiPath,NULL,LOAD_WITH_ALTERED_SEARCH_PATH);
-    if(hSetApiLib!=NULL)
-    {
+    if(hSetApiLib!=NULL){
          l_SetupDiGetClassDevsA=(HDEVINFO ( __stdcall *)(CONST GUID *,   PCSTR , HWND , IN DWORD  ))
                                     GetProcAddress(hSetApiLib,"SetupDiGetClassDevsA");
          l_SetupDiEnumDeviceInterfaces=(BOOL   ( __stdcall *)(HDEVINFO ,PSP_DEVINFO_DATA ,CONST GUID   *,DWORD,PSP_DEVICE_INTERFACE_DATA))
@@ -94,17 +80,14 @@ BOOL  SoftkeyYT88::LoadLib()
          l_SetupDiDestroyDeviceInfoList=(BOOL  ( __stdcall *)(HDEVINFO DeviceInfoSet))
                         GetProcAddress(hSetApiLib,"SetupDiDestroyDeviceInfoList");
 
-    }
-    else
-    {
+    }else{
         QMessageBox::warning(NULL, "错误?", "加载SetupApi动态库时错误。", QMessageBox::Close);
         return FALSE;
     }
 
     GetSystemDirectoryA(HidPath,MAX_PATH);lstrcatA(HidPath,"\\hid.dll");
     hHidLib=LoadLibraryExA(HidPath,NULL,LOAD_WITH_ALTERED_SEARCH_PATH);
-    if(hHidLib!=NULL)
-    {
+    if(hHidLib!=NULL){
         l_HidD_GetHidGuid=(void (__stdcall *) ( LPGUID  ))
                 GetProcAddress(hHidLib,"HidD_GetHidGuid");
         l_HidD_SetFeature=(BOOLEAN (__stdcall *)(HANDLE ,PVOID ,ULONG))
@@ -119,24 +102,21 @@ BOOL  SoftkeyYT88::LoadLib()
                 GetProcAddress(hHidLib,"HidD_FreePreparsedData");
         l_HidP_GetCaps=(NTSTATUS (__stdcall *)(PHIDP_PREPARSED_DATA  ,PHIDP_CAPS  ))
                         GetProcAddress(hHidLib,"HidP_GetCaps");
-    }
-    else
-    {
+    }else{
         QMessageBox::warning(NULL, "错误?", "加载hid动态库时错误。", QMessageBox::Close);
         return FALSE;
     }
+
     return TRUE;
 }
 
-BOOL SoftkeyYT88::Ukey_transfer(HANDLE hDevice,LPVOID lpInBuffer, int inLen,	LPVOID lpOutBuffer,	int OutLen)
-{
+BOOL SoftkeyYT88::Ukey_transfer(HANDLE hDevice,LPVOID lpInBuffer, int inLen, LPVOID lpOutBuffer, int OutLen){
     BYTE *dataBuffer=NULL;
     SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER sptdwb;
     ULONG length = 0,returned = 0;
     BOOL status = 0;
     HGLOBAL hglb_1;
-    if(inLen>1)
-    {
+    if(inLen>1){
 
         ZeroMemory(&sptdwb, sizeof(SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER));
         sptdwb.sptd.Length = sizeof(SCSI_PASS_THROUGH_DIRECT);
@@ -173,8 +153,7 @@ BOOL SoftkeyYT88::Ukey_transfer(HANDLE hDevice,LPVOID lpInBuffer, int inLen,	LPV
         if((sptdwb.sptd.ScsiStatus != 0) || (status == 0) )return FALSE;
     }
 
-    if(OutLen>0)
-    {
+    if(OutLen>0){
 
         //	dataBuffer=new BYTE[kcw_p->dKCWInLength+5];
         hglb_1=GlobalAlloc(GMEM_ZEROINIT|GMEM_MOVEABLE,OutLen);
@@ -216,8 +195,7 @@ BOOL SoftkeyYT88::Ukey_transfer(HANDLE hDevice,LPVOID lpInBuffer, int inLen,	LPV
 }
 
 
-int SoftkeyYT88::NT_GetVersion(int *Version,char *InPath)
-{
+int SoftkeyYT88::NT_GetVersion(int *Version,char *InPath){
    int ret;
    BYTE array_in[25];BYTE array_out[25];
    HANDLE hUsbDevice=MyOpenPath(InPath);
@@ -229,8 +207,7 @@ int SoftkeyYT88::NT_GetVersion(int *Version,char *InPath)
    return 0x0;
 }
 
-int SoftkeyYT88::ReadDword(  DWORD *in_data,char *Path)
-{
+int SoftkeyYT88::ReadDword(  DWORD *in_data,char *Path){
    BYTE b[4];int result;
    DWORD t[4];
    result= NT_Read(&b[0],&b[1],&b[2],&b[3],Path);
@@ -239,24 +216,21 @@ int SoftkeyYT88::ReadDword(  DWORD *in_data,char *Path)
    return result;
 }
 
-int SoftkeyYT88::WriteDword(  DWORD *in_data,char *Path)
-{
+int SoftkeyYT88::WriteDword(  DWORD *in_data,char *Path){
    BYTE b[4];
    b[0]=(BYTE)*in_data;b[1]=(BYTE)(*in_data>>8);
    b[2]=(BYTE)(*in_data>>16);b[3]=(BYTE)(*in_data>>24);
    return NT_Write(&b[0],&b[1],&b[2],&b[3],Path);
 }
 
-int SoftkeyYT88::WriteDword_2(  DWORD *in_data,char *Path)
-{
+int SoftkeyYT88::WriteDword_2(  DWORD *in_data,char *Path){
    BYTE b[4];
    b[0]=(BYTE)*in_data;b[1]=(BYTE)(*in_data>>8);
    b[2]=(BYTE)(*in_data>>16);b[3]=(BYTE)(*in_data>>24);
    return NT_Write_2(&b[0],&b[1],&b[2],&b[3],Path);
 }
 
-int SoftkeyYT88::NT_Read(  BYTE * ele1,BYTE * ele2,BYTE * ele3,BYTE * ele4,char *Path)
-{
+int SoftkeyYT88::NT_Read(  BYTE * ele1,BYTE * ele2,BYTE * ele3,BYTE * ele4,char *Path){
    int ret;
    BYTE array_out[25];
    HANDLE hUsbDevice=MyOpenPath(Path);
@@ -270,8 +244,7 @@ int SoftkeyYT88::NT_Read(  BYTE * ele1,BYTE * ele2,BYTE * ele3,BYTE * ele4,char 
    return 0;
 }
 
-int SoftkeyYT88::NT_Write(  BYTE * ele1,BYTE * ele2,BYTE * ele3,BYTE * ele4,char *InPath)
-{
+int SoftkeyYT88::NT_Write(  BYTE * ele1,BYTE * ele2,BYTE * ele3,BYTE * ele4,char *InPath){
    int ret;
    BYTE array_in[25];
    HANDLE hUsbDevice=MyOpenPath(InPath);
@@ -282,8 +255,7 @@ int SoftkeyYT88::NT_Write(  BYTE * ele1,BYTE * ele2,BYTE * ele3,BYTE * ele4,char
 }
 
 
-int SoftkeyYT88::NT_Write_2(  BYTE * ele1,BYTE * ele2,BYTE * ele3,BYTE * ele4,char *InPath)
-{
+int SoftkeyYT88::NT_Write_2(  BYTE * ele1,BYTE * ele2,BYTE * ele3,BYTE * ele4,char *InPath){
    int ret;
    BYTE array_in[25];
    HANDLE hUsbDevice=MyOpenPath(InPath);
@@ -293,20 +265,17 @@ int SoftkeyYT88::NT_Write_2(  BYTE * ele1,BYTE * ele2,BYTE * ele3,BYTE * ele4,ch
    return ret;
 }
 
-int SoftkeyYT88::NT_FindPort(  int start,char *OutPath)
-{
+int SoftkeyYT88::NT_FindPort(  int start,char *OutPath){
    int count=0;
    ZeroMemory(OutPath,sizeof(OutPath));
    if(isfindmydevice(start,&count,OutPath))return 0;
    return NotFondKey;
 }
 
-int SoftkeyYT88::NT_FindPort_2(  int start,DWORD in_data,DWORD verf_data,char *OutPath)
-{
+int SoftkeyYT88::NT_FindPort_2(  int start,DWORD in_data,DWORD verf_data,char *OutPath){
    int count=0;
-   int pos;DWORD out_data;int ret;
-   for(pos=start;pos<127;pos++)
-   {
+   int pos; DWORD out_data; int ret;
+   for(pos=start; pos<127; pos++){
        if(!isfindmydevice(pos,&count,OutPath)){return NotFondKey;}
        ret=WriteDword( &in_data,OutPath);
        if(ret!=0){continue;}
@@ -318,10 +287,9 @@ int SoftkeyYT88::NT_FindPort_2(  int start,DWORD in_data,DWORD verf_data,char *O
    return NotFondKey;
 }
 
-int SoftkeyYT88::Read(BYTE *OutData,short address,BYTE *password,char *Path )
-{
+int SoftkeyYT88::Read(BYTE *OutData,short address,BYTE *password,char *Path ){
     BYTE opcode=0x80;
-        int ret;
+    int ret;
     BYTE array_in[25],array_out[25];int n;
     HANDLE hUsbDevice=MyOpenPath(Path);
     if(hUsbDevice == INVALID_HANDLE_VALUE)return NotFondKey;
@@ -334,23 +302,22 @@ int SoftkeyYT88::Read(BYTE *OutData,short address,BYTE *password,char *Path )
     array_in[1]=READBYTE;//read 0x10;write 0x11;
     array_in[2]=opcode;//0x01;//read 0x80 ;write 0x40;
     array_in[3]=(BYTE)address;
-    for(n=5;n<14;n++)
-    {
+    for(n=5;n<14;n++){
         array_in[n]=*password;
         password++;
     }
+
     ret= Hanldetransfe(hUsbDevice,array_in,13,array_out,2,Path);
     if(ret!=0)return ret;
-    if(array_out[0]!=0x53 )
-    {
+    if(array_out[0]!=0x53){
         return ErrReadPWD;//表示失败；
     }
+
     *OutData=array_out[1];
     return 0;
 }
 
- int  SoftkeyYT88::Write(BYTE InData,short address,BYTE *password,char *Path )
-{
+ int  SoftkeyYT88::Write(BYTE InData,short address,BYTE *password,char *Path ){
     BYTE opcode=0x40;int ret;
 
     BYTE array_in[25],array_out[25];int n;
@@ -365,22 +332,21 @@ int SoftkeyYT88::Read(BYTE *OutData,short address,BYTE *password,char *Path )
     array_in[2]=opcode;//0x01;//read 0x80 ;write 0x40;
     array_in[3]=(BYTE)address;
     array_in[4]=InData;
-    for(n=5;n<14;n++)
-    {
+    for(n=5;n<14;n++){
         array_in[n]=*password;
         password++;
     }
+
     ret= Hanldetransfe(hUsbDevice,array_in,13,array_out,2,Path);
     if(ret!=0)return ret;
-    if(array_out[1]!=1 )
-    {
+    if(array_out[1]!=1 ){
         return ErrWritePWD;//表示失败；
     }
+
     return 0;
 }
 
- int SoftkeyYT88::Y_Read(BYTE *OutData,short address ,short len,BYTE *password,char *Path )
-{
+ int SoftkeyYT88::Y_Read(BYTE *OutData,short address ,short len,BYTE *password,char *Path ){
     short addr_l,addr_h;int n;int ret;
 
     BYTE array_in[512],array_out[512];
@@ -418,8 +384,7 @@ int SoftkeyYT88::Read(BYTE *OutData,short address,BYTE *password,char *Path )
     return 0;
 }
 
- int SoftkeyYT88::Y_Write(BYTE *InData,short address,short len,BYTE *password,char *Path )
-{
+ int SoftkeyYT88::Y_Write(BYTE *InData,short address,short len,BYTE *password,char *Path ){
     short addr_l,addr_h;int n;int ret;
     BYTE array_in[512],array_out[512];
     HANDLE hUsbDevice=MyOpenPath(Path);
@@ -433,28 +398,26 @@ int SoftkeyYT88::Read(BYTE *OutData,short address,BYTE *password,char *Path )
     array_in[2]=(BYTE)addr_h;//0x01;//read 0x80 ;write 0x40;
     array_in[3]=(BYTE)addr_l;
     array_in[4]=(BYTE )len;
-    for(n=0;n<8;n++)
-    {
+    for(n=0;n<8;n++){
         array_in[5+n]=*password;
         password++;
     }
-    for(n=0;n<len;n++)
-    {
+
+    for(n=0;n<len;n++){
         array_in[13+n]=*InData;
         InData++;
     }
+
     ret= Hanldetransfe(hUsbDevice,array_in,13+len,array_out,3,Path);
     if(ret!=0)return ret;
 
-    if(array_out[0]!=0x0)
-    {
+    if(array_out[0]!=0x0){
         return ErrWritePWD;//表示失败；
     }
     return 0;
 }
 
-BOOL SoftkeyYT88::isfindmydevice( int pos ,int *count,char *OutPath)
-{
+BOOL SoftkeyYT88::isfindmydevice( int pos ,int *count,char *OutPath){
 
    HDEVINFO                            hardwareDeviceInfo=NULL;
    SP_INTERFACE_DEVICE_DATA            deviceInfoData;
@@ -476,11 +439,10 @@ BOOL SoftkeyYT88::isfindmydevice( int pos ,int *count,char *OutPath)
                                               NULL, // Define no
                                               DIGCF_PRESENT | DIGCF_DEVICEINTERFACE); // Function class devices.
 
-  if(hardwareDeviceInfo==INVALID_HANDLE_VALUE)
-  {
+  if(hardwareDeviceInfo==INVALID_HANDLE_VALUE){
       return FALSE;
   }
-   deviceInfoData.cbSize = sizeof (SP_INTERFACE_DEVICE_DATA);
+  deviceInfoData.cbSize = sizeof (SP_INTERFACE_DEVICE_DATA);
 
        for (i=0; (*l_SetupDiEnumDeviceInterfaces) (hardwareDeviceInfo,0,&hidGuid,i,&deviceInfoData); i++)
        {
@@ -1095,9 +1057,9 @@ int SoftkeyYT88::GetTrashBufLen(char * Path,int *OutLen)
 int SoftkeyYT88::NT_GetIDVersion(int *Version,char *InPath)
 {
     int ret;
-    HANDLE hsignal=CreateSemaphoreA(NULL,1,1,"ex_sim");
+    HANDLE hsignal=CreateSemaphoreA(NULL, 1, 1, "ex_sim");
     WaitForSingleObject(hsignal,INFINITE);
-    ret=(NT_GetVersion)(Version,InPath);
+    ret=(NT_GetVersion)(Version, InPath);
     ReleaseSemaphore(hsignal,1,NULL);
     CloseHandle(hsignal);
     return ret;
@@ -1298,8 +1260,8 @@ DWORD SoftkeyYT88::HexToInt(char* s)
 {
     char hexch[] = "0123456789ABCDEF";
     size_t i;
-   DWORD r,n,k,j;
-   char ch;
+    DWORD r,n,k,j;
+    char ch;
 
     k=1; r=0;
     for (i=strlen(s);  i>0; i--) {
@@ -1311,6 +1273,7 @@ DWORD SoftkeyYT88::HexToInt(char* s)
         r += (n*k);
         k *= 16;
     }
+
     return r;
 }
 
@@ -2164,7 +2127,7 @@ void SoftkeyYT88::StrEnc(char *InString, char *OutString, char *Key)
   delete [] outbuf;
 }
 
-int SoftkeyYT88::GetProduceDate(  char *OutDate,char *InPath)
+int SoftkeyYT88::GetProduceDate(char *OutDate,char *InPath)
 {
     int ret;
     BYTE B_OutBDate[8];
@@ -2245,11 +2208,9 @@ int  SoftkeyYT88::SetCal(char * W_HKey, char *W_LKey, char * new_HKey, char *new
     return ret;
 }
 
-void  SoftkeyYT88::SnToProduceDate(char* InSn,char *OutProduceDate)
-{
-
-   char temp[5]="";
-   memset(temp,0,5);
+void SoftkeyYT88::SnToProduceDate(char* InSn,char *OutProduceDate){
+   char temp[5]={'\0'};
+   memset(temp, 0, 5);
    lstrcpynA(temp,&InSn[0],2+1);
    int year=2000 + HexToInt(temp);
    lstrcpynA(temp,&InSn[2],2+1);
@@ -2262,13 +2223,12 @@ void  SoftkeyYT88::SnToProduceDate(char* InSn,char *OutProduceDate)
    int minutes=  HexToInt(temp);
    lstrcpynA(temp,&InSn[10],2+1);
    int sec=  HexToInt(temp);
-   lstrcpynA(temp,&InSn[12],4+1);
+   lstrcpynA(temp,&InSn[12], 4+1);
    int sn=  HexToInt(temp);
     wsprintfA(OutProduceDate,"%d年%d月%d日%d时%d分%d秒--序号：%d", year, month, day, hour, minutes, sec, sn);
 }
 
-int SoftkeyYT88::NT_SetDisableFlag(BYTE Flag,BYTE *password,char *Path )
-{
+int SoftkeyYT88::NT_SetDisableFlag(BYTE Flag,BYTE *password,char *Path ){
     int n;int ret;
     BYTE array_in[512],array_out[512];
     HANDLE hUsbDevice=MyOpenPath(Path);
