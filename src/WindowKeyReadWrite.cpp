@@ -1,5 +1,5 @@
 
-#include "WindowReadWrite.h"
+#include "WindowKeyReadWrite.h"
 #include "Config.h"
 
 #include <QDebug>
@@ -12,8 +12,8 @@ const static std::string YT88DeviceReadPasswordLow =  "53589793";
 const static std::string YT88DeviceWritePasswordHigh ="23846264";
 const static std::string YT88DeviceWritePasswordLow = "33832795";
 
-void WindowReadWrite::initUI(){
-    qDebug() << "WindowReadWrite::initUI";
+void WindowKeyReadWrite::initUI(){
+    qDebug() << "WindowKeyReadWrite::initUI";
     setWindowTitle("加密狗测试");
 
     int x = 40, y = 20;
@@ -65,23 +65,27 @@ void WindowReadWrite::initUI(){
 
     setFixedSize(420, 400);
     addConnection();
+    onbuttonDetectKey();
 }
 
-void WindowReadWrite::addConnection(){
-    qDebug() << "WindowReadWrite::addConnection";
-    connect(&m_buttonDetectKey, &QPushButton::clicked, this, &WindowReadWrite::onbuttonDetectKey);
-    connect(&m_buttonReadString, &QPushButton::clicked, this, &WindowReadWrite::onbuttonReadString);
-    connect(&m_buttonWriteString, &QPushButton::clicked, this, &WindowReadWrite::onbuttonWriteString);
-    connect(&m_buttonReset, &QPushButton::clicked, this, &WindowReadWrite::onbuttonReset);
-    connect(&m_buttonInit, &QPushButton::clicked, this, &WindowReadWrite::onbuttonInit);
+void WindowKeyReadWrite::addConnection(){
+    qDebug() << "WindowKeyReadWrite::addConnection";
+    connect(&m_buttonDetectKey, &QPushButton::clicked, this, &WindowKeyReadWrite::onbuttonDetectKey);
+    connect(&m_buttonReadString, &QPushButton::clicked, this, &WindowKeyReadWrite::onbuttonReadString);
+    connect(&m_buttonWriteString, &QPushButton::clicked, this, &WindowKeyReadWrite::onbuttonWriteString);
+    connect(&m_buttonReset, &QPushButton::clicked, this, &WindowKeyReadWrite::onbuttonReset);
+    connect(&m_buttonInit, &QPushButton::clicked, this, &WindowKeyReadWrite::onbuttonInit);
     ;
 }
 
-void WindowReadWrite::onbuttonDetectKey(){
-    qDebug() << "WindowReadWrite::onbuttonDetectKey";
+void WindowKeyReadWrite::onbuttonDetectKey(){
+    qDebug() << "WindowKeyReadWrite::onbuttonDetectKey";
     char DevicePath[260];
     if (m_keyYT88.FindPort(0, DevicePath) != 0){
-        QMessageBox::warning(this, QStringLiteral("错误"), QStringLiteral("未找到加密锁,请插入加密锁后，再进行操作。"), QMessageBox::Close);
+        // QMessageBox::warning(this, QStringLiteral("错误"), QStringLiteral("未找到加密锁,请插入加密锁后，再进行操作。"), QMessageBox::Close);
+        m_buttonDetectKey.setText("检测加密狗[未插入]");
+        m_EditSerialNumber.setText("未插入加密狗");
+        return;
     }
 
     m_devicePath = DevicePath;
@@ -94,8 +98,8 @@ void WindowReadWrite::onbuttonDetectKey(){
 }
 
 //这个例子与上面的不同之处是，可以读取非固定长度的字符串，它是先从首地址读取字符串的长度，然后再读取相应的字符串
-void WindowReadWrite::onbuttonReadString(){
-    qDebug() << "WindowReadWrite::onbuttonReadString";
+void WindowKeyReadWrite::onbuttonReadString(){
+    qDebug() << "WindowKeyReadWrite::onbuttonReadString";
     int ret;
     short nlen;
     byte lengthBuffer[1];
@@ -124,8 +128,8 @@ void WindowReadWrite::onbuttonReadString(){
     }
 }
 
-void WindowReadWrite::onbuttonWriteString(){
-    qDebug() << "WindowReadWrite::onbuttonWriteString";
+void WindowKeyReadWrite::onbuttonWriteString(){
+    qDebug() << "WindowKeyReadWrite::onbuttonWriteString";
     if(writeDataToKey(m_EditStringWriteData.text().toStdString()))
         QMessageBox::information(NULL, QStringLiteral("成功"),QStringLiteral("写入字符串成功"), QMessageBox::Close);
     else
@@ -134,8 +138,8 @@ void WindowReadWrite::onbuttonWriteString(){
 }
 
 //用于将加密锁数据全部初始化为0，只适用于版本号大于或等于9以上的锁
-void WindowReadWrite::onbuttonReset(){
-    qDebug() << "WindowReadWrite::onbuttonReset";
+void WindowKeyReadWrite::onbuttonReset(){
+    qDebug() << "WindowKeyReadWrite::onbuttonReset";
     int ret = -1;
     // 1. 重新初始化加密狗
     ret = m_keyYT88.ReSet((char*)m_devicePath.c_str());
@@ -167,7 +171,7 @@ void WindowReadWrite::onbuttonReset(){
 //提示：开发商可以根据这个编码查询是否是我们公司的原厂锁，该编码是全球唯一的，将这个编码发给我们，我们就可以识别到是否是我们公司的原厂锁了
 //开发商可以凭这个出厂编码来维护自己的正当权益，也可以将这个唯一编码用于加密
 //出厂编码含义：YY--MM--DD--hh--mm--ss--NNNN  均以16进制的形式表示, 年--月--日--时--分--秒--4位随机序号
-std::string WindowReadWrite::getSerialNumber(){
+std::string WindowKeyReadWrite::getSerialNumber(){
     char sn[17];
     memset(sn, 0, 17);
     std::string strNum = "";
@@ -195,8 +199,8 @@ std::string WindowReadWrite::getSerialNumber(){
 }
 
 // 发行加密狗 [修改读写密码为指定密码 + 写入指定的数据]
-void WindowReadWrite::onbuttonInit(){
-    qDebug() << "WindowReadWrite::onbuttonInit";
+void WindowKeyReadWrite::onbuttonInit(){
+    qDebug() << "WindowKeyReadWrite::onbuttonInit";
     // 1. 修改读密码和写密码
     // 2.先设置写密码
     int ret = m_keyYT88.SetWritePassword((char*)"FFFFFFFF",
@@ -231,7 +235,7 @@ void WindowReadWrite::onbuttonInit(){
     writeDataToKey(data.toStdString());
 }
 
-bool WindowReadWrite::writeDataToKey(std::string data){
+bool WindowKeyReadWrite::writeDataToKey(std::string data){
     //注意，如果是普通单片机芯片，储存器的写次数是有限制的，写次数为1000次，读不限制，如果是智能芯片，写的次数为10万次
     // '这个例子与上面的不同之处是，可以写入非固定长度的字符串，它是先将字符串的长度写入到首地址，然后再写入相应的字符串
     int ret = -1;

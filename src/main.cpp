@@ -1,6 +1,7 @@
 ﻿
 #include "DialogFunction.h"
-#include "WindowReadWrite.h"
+#include "WindowKeyReadWrite.h"
+#include "USBDeviceEventFilter.h"
 
 #include <QApplication>
 
@@ -10,17 +11,22 @@ int main(int argc, char *argv[]){
     // qputenv("QT_ENABLE_HIGHDPI_SCALING", "0");
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
-    QApplication a(argc, argv);
-    a.setApplicationName("加密狗测试");
+    QApplication app(argc, argv);
+    app.setApplicationName("加密狗测试");
+
+    USBDeviceEventFilter filter;
+    app.installNativeEventFilter(&filter);
+
 
     // // 1. 厂家提供的示例程序
     // DialogFunction dialog;
     // dialog.show();
 
     // 2. 简单常用的方法调用
-    WindowReadWrite window;
+    WindowKeyReadWrite window;
     window.initUI();
+    QObject::connect(&filter, &USBDeviceEventFilter::DeviceEvent, &window, &WindowKeyReadWrite::onbuttonDetectKey);
     window.show();
 
-    return a.exec();
+    return app.exec();
 }

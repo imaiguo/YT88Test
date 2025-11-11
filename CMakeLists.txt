@@ -30,7 +30,8 @@ set(SRC
     src/sm3.cpp
     src/SoftkeyYT88.cpp
 
-    src/WindowReadWrite.cpp
+    src/WindowKeyReadWrite.cpp
+    src/USBDeviceEventFilter.cpp
 
     src/dialog.ui
 )

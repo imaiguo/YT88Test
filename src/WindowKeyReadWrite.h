@@ -8,10 +8,10 @@
 
 #include "SoftkeyYT88.h"
 
-class WindowReadWrite : public QWidget{
+class WindowKeyReadWrite : public QWidget{
 Q_OBJECT;
 public:
-    WindowReadWrite(QWidget* parent=nullptr):QWidget(parent){};
+    WindowKeyReadWrite(QWidget* parent=nullptr):QWidget(parent){};
     void initUI();
 
 private:
